@@ -9,9 +9,9 @@ const {
 } = require('graphql')
 
 const favorite_albums = [
-    {id: '1', ranking: 1, artistId: '1', yearOfRelease: 2005, name: 'Illinois', genre: ['folk', 'baroque pop', 'indie rock', 'experimental']},
-    {id: '2', ranking: 2, artistId: '2', yearOfRelease: 2013, name: 'Virgins', genre: ['electronic', 'drone', 'dark ambient', 'experimental']},
-    {id: '3', ranking: 3, artistId: '3', yearOfRelease: 2003, name: 'Systems / Layers', genre: ['neo-classical', 'post-rock']},
+    {id: '1', ranking: 1, artistId: '1', yearOfRelease: 2005, name: 'Illinois', genre: ['folk', 'baroque pop', 'indie rock', 'experimental'], commentary: 'i love it'},
+    {id: '2', ranking: 2, artistId: '2', yearOfRelease: 2013, name: 'Virgins', genre: ['electronic', 'drone', 'dark ambient', 'experimental'], commentary: 'it\'s like wow'},
+    {id: '3', ranking: 3, artistId: '3', yearOfRelease: 2003, name: 'Systems / Layers', genre: ['neo-classical', 'post-rock'], commentary: 'too many pretty'},
 ]
 
 const artists = [
@@ -35,5 +35,14 @@ const AlbumType = new GraphQLObjectType({
         yearOfRelease: {type: GraphQLInt},
         name: {type: GraphQLString},
         genre: {type: GraphQLList(GraphQLString)},
+        commentary: {type: GraphQLString},
+    })
+})
+
+const ArtistType = new GraphQLObjectType({
+    name: 'Artist',
+    fields: () => ({
+        id: {type: GraphQLID},
+        name: {type: GraphQLString}
     })
 })
