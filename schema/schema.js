@@ -46,3 +46,39 @@ const ArtistType = new GraphQLObjectType({
         name: {type: GraphQLString}
     })
 })
+
+const RootQuery = GraphQLObjectType({
+    name: 'RootQueryType',
+    fields: {
+        album: {
+            type: AlbumType,
+            args: { id: { type: GraphQLID } },
+            resolve(parent, args) {
+                // TODO: get album based on album's id
+            }
+        },
+        artist: {
+            type: ArtistType,
+            args: { id: { type: GraphQLID } },
+            resolve(parent, args) {
+                // TODO: get artist based on artist's id
+            }
+        },
+        albums: {
+            type: new GraphQLList(AlbumType),
+            resolve(parent, args) {
+                // TODO: get all albums
+            }
+        },
+        artists: {
+            type: new GraphQLList(ArtistType),
+            resolve(parent, args) {
+                // TODO: get all artists
+            }
+        }
+    }
+})
+
+module.exports = new GraphQLSchema({
+    query: RootQuery
+})
