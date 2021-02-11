@@ -19,3 +19,21 @@ const artists = [
     {id: '2', name: 'Tim Hecker'},
     {id: '3', name: 'Rachel\'s'}
 ]
+
+const AlbumType = new GraphQLObjectType({
+    name: 'Album',
+    fields: () => ({
+        id: {type: GraphQLID},
+        ranking: {type: GraphQLInt},
+        artist: {
+            type: GraphQLID,
+            resolve(parent, args) {
+                // TODO: get artist based on album's artistId
+                return '1';
+            }
+        },
+        yearOfRelease: {type: GraphQLInt},
+        name: {type: GraphQLString},
+        genre: {type: GraphQLList(GraphQLString)},
+    })
+})
