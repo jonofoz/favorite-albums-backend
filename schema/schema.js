@@ -1,4 +1,12 @@
-const graphql = require('graphql');
+const {
+    GraphQLSchema,
+    GraphQLObjectType,
+    GraphQLNonNull,
+    GraphQLID,
+    GraphQLInt,
+    GraphQLString,
+    GraphQLList
+} = require('graphql')
 
 const favorite_albums = [
     {id: '1', ranking: 1, artistId: '1', yearOfRelease: 2005, name: 'Illinois', genre: ['folk', 'baroque pop', 'indie rock', 'experimental']},
