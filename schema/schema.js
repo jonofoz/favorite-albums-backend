@@ -1,3 +1,5 @@
+const Album = require('../models/Album');
+const Artist = require('../models/Artist');
 const {
     GraphQLSchema,
     GraphQLObjectType,
@@ -26,10 +28,9 @@ const AlbumType = new GraphQLObjectType({
         id: {type: GraphQLID},
         ranking: {type: GraphQLInt},
         artist: {
-            type: GraphQLID,
+            type: ArtistType,
             resolve(parent, args) {
-                // TODO: get artist based on album's artistId
-                return '1';
+                return Artist.findById(parent.artistId);
             }
         },
         yearOfRelease: {type: GraphQLInt},
@@ -47,33 +48,33 @@ const ArtistType = new GraphQLObjectType({
     })
 })
 
-const RootQuery = GraphQLObjectType({
+const RootQuery = new GraphQLObjectType({
     name: 'RootQueryType',
     fields: {
         album: {
             type: AlbumType,
             args: { id: { type: GraphQLID } },
             resolve(parent, args) {
-                // TODO: get album based on album's id
+                return Album.findById(args.id);
             }
         },
         artist: {
             type: ArtistType,
             args: { id: { type: GraphQLID } },
             resolve(parent, args) {
-                // TODO: get artist based on artist's id
+                return Artist.findById(args.id);
             }
         },
         albums: {
             type: new GraphQLList(AlbumType),
             resolve(parent, args) {
-                // TODO: get all albums
+                return Album.find({});
             }
         },
         artists: {
             type: new GraphQLList(ArtistType),
             resolve(parent, args) {
-                // TODO: get all artists
+                return Artist.find({});
             }
         }
     }
