@@ -1,4 +1,5 @@
 require('dotenv').config();
+const axios = require('axios');
 const express = require('express');
 const { graphqlHTTP } = require('express-graphql');
 const schema = require('./schema/schema');
@@ -18,6 +19,56 @@ app.use('/graphql', graphqlHTTP({
     schema,
     graphiql: true
 }))
+
+app.get('/album-art/:artist/:release', async (req, res) => {
+    // First, get the MBID of the album.
+    const { artist, release } = req.params;
+    var result = await axios.get(`http://www.musicbrainz.org/ws/2/release/?query=artist:${artist}+release:${release}`, {
+        // A meaningful 'User-Agent' header is required to reduce throttling in the MusicBrainz API.
+        // See: https://musicbrainz.org/doc/MusicBrainz_API/Rate_Limiting#Provide_meaningful_User-Agent_strings
+        headers: {
+            'User-Agent': 'FavoriteAlbums/1.0.0 ( jon@jonofoz.com )',
+            'Accept': 'application/json',
+            'Host': 'musicbrainz.org'
+        }
+    })
+    /*
+        When getting album art, we filter out
+        * Bootlegs
+        * Cassettes
+    */
+    const validResults = result.data.releases.filter(r => (r.status && r.status === 'Official' && r.packaging && r.packaging !== 'Cassette Case' && r['text-representation'].language === 'eng'))
+    var resultsToTry = validResults;
+    const maximumResultsAllowed = 10;
+    if (resultsToTry.length > maximumResultsAllowed) {
+        resultsToTry = resultsToTry.slice(0, maximumResultsAllowed);
+    }
+    // Now get the image of the album, using the MBID
+    for await (r of resultsToTry) {
+        try {
+            result = await axios.get(`https://www.coverartarchive.org/release/${r.id}`, {
+                headers: {
+                    'Content-Type': 'plain/text',
+                    'User-Agent': 'FavoriteAlbums/1.0.0 ( jon@jonofoz.com )',
+                    'Accept': 'application/json',
+                    'Host': 'coverartarchive.org'
+                }
+            })
+            const validImages = result.data.images.filter(i => i.front === true && i.back === false && i.approved === true)
+            const thumbnails = validImages[0].thumbnails;
+            const smallestThumbnail = thumbnails[Object.keys(thumbnails)[0]]
+            console.log(`Tried '${r.id}' and found cover art!`);
+            res.json(smallestThumbnail);
+            // res.send(`<img src=${smallestThumbnail} />`);
+            break;
+        }
+        catch {
+            console.log(`Tried '${r.id}' but didn't find cover art.`);
+        }
+    };
+
+
+})
 
 app.listen(PORT, () => {
     console.log(`Listening on port ${PORT}!`);
