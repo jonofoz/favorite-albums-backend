@@ -7,7 +7,8 @@ const AlbumSchema = new Schema({
     yearOfRelease: Number,
     name: String,
     genre: [String],
-    commentary: String
+    commentary: String,
+    thumbnail: String,
 })
 
 module.exports = mongoose.model('Album', AlbumSchema);

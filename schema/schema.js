@@ -36,7 +36,8 @@ const AlbumType = new GraphQLObjectType({
         yearOfRelease: {type: GraphQLInt},
         name: {type: GraphQLString},
         genre: {type: GraphQLList(GraphQLString)},
-        commentary: {type: GraphQLString},
+        commentary: { type: GraphQLString },
+        thumbnail: { type: GraphQLString }
     })
 })
 
@@ -91,7 +92,8 @@ const Mutation = new GraphQLObjectType({
                 artistId: {type: new GraphQLNonNull(GraphQLID)},
                 genre: {type: GraphQLList(GraphQLString)},
                 yearOfRelease: {type: GraphQLInt},
-                commentary: {type: GraphQLString}
+                commentary: {type: GraphQLString},
+                thumbnail: {type: GraphQLString},
             },
             resolve(parent, args) {
                 let album = new Album({
@@ -100,7 +102,8 @@ const Mutation = new GraphQLObjectType({
                     genre: args.genre,
                     artistId: args.artistId,
                     yearOfRelease: args.yearOfRelease,
-                    commentary: args.commentary
+                    commentary: args.commentary,
+                    thumbnail: args.thumbnail
                 })
                 return album.save();
             }
