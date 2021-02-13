@@ -34,15 +34,19 @@ app.get('/album-art/:artist/:release', async (req, res) => {
     })
     /*
         When getting album art, we filter out
-        * Bootlegs
+        * Bootlegs and Promotionals
         * Cassettes
     */
-    const validResults = result.data.releases.filter(r => (r.status && r.status === 'Official' && r.packaging && r.packaging !== 'Cassette Case' && r['text-representation'].language === 'eng'))
-    var resultsToTry = validResults;
-    const maximumResultsAllowed = 10;
-    if (resultsToTry.length > maximumResultsAllowed) {
-        resultsToTry = resultsToTry.slice(0, maximumResultsAllowed);
-    }
+   const validResults = result.data.releases.filter(r => (
+        (!r.status    || (r.status    && r.status    === 'Official')) &&
+        (!r.packaging || (r.packaging && r.packaging !== 'Cassette Case')))
+   )
+        var resultsToTry = validResults;
+        const maximumResultsAllowed = 10;
+        if (resultsToTry.length > maximumResultsAllowed) {
+            resultsToTry = resultsToTry.slice(0, maximumResultsAllowed);
+        }
+
     // Now get the image of the album, using the MBID
     for await (r of resultsToTry) {
         try {
@@ -56,14 +60,18 @@ app.get('/album-art/:artist/:release', async (req, res) => {
             })
             const validImages = result.data.images.filter(i => i.front === true && i.back === false && i.approved === true)
             const thumbnails = validImages[0].thumbnails;
-            const smallestThumbnail = thumbnails[Object.keys(thumbnails)[0]]
-            console.log(`Tried '${r.id}' and found cover art!`);
+            /*
+                Check for the smallest thumbnail possible.
+                    If the 'small' key exists, we use it.
+                    Otherwise, we assume the keys are ordered like ['250', '500', ...].
+            */
+            const smallestThumbnail = Object.keys(thumbnails).includes('small') ? thumbnails.small : thumbnails[Object.keys(thumbnails)[0]]
+            console.log(`Tried '${r.id}' and found cover art for (${artist}, ${release})!`);
             res.json(smallestThumbnail);
-            // res.send(`<img src=${smallestThumbnail} />`);
             break;
         }
         catch {
-            console.log(`Tried '${r.id}' but didn't find cover art.`);
+            console.log(`Tried '${r.id}' but didn't find cover art for (${artist}, ${release}).`);
         }
     };
 
