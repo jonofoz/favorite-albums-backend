@@ -24,13 +24,8 @@ const useCache = true;
 // The cache
 const cache = {
     results: {
-        MBID: {
-            raw: {},
-            filtered: {}
-        },
-        coverArt: {
-
-        }
+        MBID: {},
+        coverArt: {}
     }
 };
 
@@ -39,8 +34,8 @@ app.get('/album-art/:artist/:release', async (req, res) => {
     const cacheString = `${artist}_${release}`;
     let results;
     // First, we'll get a raw array of releases; all we want is their MBIDs.
-    if (useCache && cache.results.MBID.raw.cacheString) {
-        results = cache.results.MBID.raw.cacheString;
+    if (useCache && cache.results.MBID[cacheString]) {
+        results = cache.results.MBID[cacheString];
     }
     else {
         try {
@@ -53,10 +48,11 @@ app.get('/album-art/:artist/:release', async (req, res) => {
                     'Host': 'musicbrainz.org'
                 }
             })
-            cache.results.MBID.raw.cacheString = results;
+            results = results.data.releases;
+            cache.results.MBID[cacheString] = results;
         }
-        catch {
-            console.log(':(');
+        catch (err) {
+            console.log(err.message);
         }
     }
 
@@ -65,26 +61,17 @@ app.get('/album-art/:artist/:release', async (req, res) => {
         * Bootlegs and Promotionals
         * Cassettes
     */
-    let validResults;
-    if (useCache && cache.results.MBID.filtered.cacheString) {
-        validResults = cache.results.MBID.filtered.cacheString;
-    }
-    else {
-        validResults = results.data.releases.filter(r => (
-            (!r.status || (r.status && r.status === 'Official')) &&
-            (!r.packaging || (r.packaging && r.packaging !== 'Cassette Case')))
-        )
-    }
-    var resultsToTry = validResults;
-    const maximumResultsAllowed = 10;
-    if (resultsToTry.length > maximumResultsAllowed) {
-        resultsToTry = resultsToTry.slice(0, maximumResultsAllowed);
-    }
+    const validResults = results.filter(r => (
+        (!r.status || (r.status && r.status === 'Official')) &&
+        (!r.packaging || (r.packaging && r.packaging !== 'Cassette Case')))
+    )
+
+    const resultsToTry = validResults.slice(0, 10);
 
     // Now get the image of the album, using the MBID
     let finalThumbnail;
-    if (useCache && cache.results.coverArt.cacheString) {
-        finalThumbnail = cache.results.coverArt.cacheString;
+    if (useCache && cache.results.coverArt[cacheString]) {
+        finalThumbnail = cache.results.coverArt[cacheString];
         console.log(`Found cached artwork for (${artist}, ${release})!`);
     }
     else {
@@ -107,7 +94,7 @@ app.get('/album-art/:artist/:release', async (req, res) => {
                 */
                 finalThumbnail = Object.keys(thumbnails).includes('small') ? thumbnails.small : thumbnails[Object.keys(thumbnails)[0]]
                 console.log(`Tried '${r.id}' and found cover art for (${artist}, ${release})!`);
-                cache.results.coverArt.cacheString = finalThumbnail;
+                cache.results.coverArt[cacheString] = finalThumbnail;
                 break;
             }
             catch {
