@@ -104,9 +104,17 @@ app.get('/album-art/:artist/:release', async (req, res) => {
     }
     setTimeout(() => { }, 100);
     res.json(finalThumbnail);
-
-
+    // res.send(`<img src=${finalThumbnail} />`);
 })
+
+app.get('/auth/:password', (req, res) => {
+    if (req.params.password == process.env.ADMIN_PASSWORD) {
+        res.status(200).send('Password Accepted');
+    }
+    else {
+        res.status(403).send('Password Denied');
+    }
+});
 
 app.listen(PORT, () => {
     console.log(`Listening on port ${PORT}!`);
